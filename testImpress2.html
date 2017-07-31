@@ -1,0 +1,96 @@
+<html>
+  <head>
+    <meta name="generator"
+    content="HTML Tidy for HTML5 (experimental) for Windows https://github.com/w3c/tidy-html5/tree/c63cc39" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1024" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+ 	<link href="css/default-style.css" rel="stylesheet" />
+	<script src="js/d3.min.js"></script>
+	<script src="js/packer.growing.js"></script>
+	<script src="js/PAImpressApp2_rel.js"></script>
+	
+    <title></title>
+  </head>
+  <body>
+     <div id="impress">
+    </div>
+ <script src="js/impress.js"></script>
+	 <script>
+	var inits=[{name:"This is the first item",desc:"this is the first item description"},{name:"this is the second item",desc:"this is the second item description"}];
+	d3.select("div#impress").selectAll('.step')
+		.data(myFullData)
+		.enter()
+		.append("div")
+		.html(function(d){return "<H1>"+d.INIT_NAME +"</H1>" + d.WHAT})
+		.attr("class","step");
+	
+	function randomScale(){
+        var bob=(Math.random()+.8)*3;
+        return bob;
+    }
+	function randomRot(){
+		var bob=Math.random()
+		if (bob<=0.25){
+				return [0,0];
+		} else if (bob<=0.5){
+				return [90,1];
+		} else if (bob<=0.75){
+				return [180,0];
+		} else {
+				return [270,1];
+		}
+        //return [0,0];
+	}
+	
+	function myLayout(data) {
+	var nodes=data[0];
+	for (i=0;i<nodes.length;i++){
+		var getRand=randomRot();
+        var getScale=randomScale();
+        nodes[i].scale=getScale;
+		nodes[i].rot=getRand[0];
+        nodes[i].rotState=getRand[1];
+		if (nodes[i].rotState==0){
+			nodes[i].w=nodes[i].offsetWidth*nodes[i].scale;
+			nodes[i].h=nodes[i].offsetHeight*nodes[i].scale;
+		} else {
+			nodes[i].h=nodes[i].offsetWidth*nodes[i].scale;
+			nodes[i].w=nodes[i].offsetHeight*nodes[i].scale;
+		} 
+	}
+	var packer = new GrowingPacker();
+	packer.fit(nodes);
+	for (i=0;i<nodes.length;i++){
+        if (nodes[i].rotState==0){
+            nodes[i].__data__.x=nodes[i].fit.x+0.5*nodes[i].offsetWidth*nodes[i].scale;
+            nodes[i].__data__.y=nodes[i].fit.y+0.5*nodes[i].offsetHeight*nodes[i].scale;
+        } else {
+            nodes[i].__data__.x=nodes[i].fit.x+0.5*nodes[i].offsetHeight*nodes[i].scale;
+            nodes[i].__data__.y=nodes[i].fit.y+0.5*nodes[i].offsetWidth*nodes[i].scale;
+        };
+		nodes[i].__data__.rot=nodes[i].rot;
+        nodes[i].__data__.scale=nodes[i].scale;
+	}	
+	return nodes
+	}
+	
+	var origNodes=d3.selectAll(".step");
+	myLayout(origNodes);
+	origNodes
+		.attr('data-x',function(d){return d.x})
+		.attr('data-y',function(d){return d.y})
+		.attr('data-rotate',function(d){return d.rot})
+        .attr('data-scale',function(d){return d.scale;});
+		
+
+    impress().init();
+    
+   (function(){
+    impress().next();
+    setTimeout(arguments.callee, 15000);
+    })();
+	</script>
+   
+  </body>
+</html>
